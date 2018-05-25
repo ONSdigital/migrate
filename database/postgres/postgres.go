@@ -130,22 +130,14 @@ func (p *Postgres) Lock() error {
 		return err
 	}
 
-	// This will either obtain the lock immediately and return true,
-	// or return false if the lock cannot be acquired immediately.
-	panic("Locking")
 	log.Info(fmt.Sprintf("Locking %s", aid))
-	query := `SELECT pg_advisory_lock($1)`
-	var success bool
-	if err := p.conn.QueryRowContext(context.Background(), query, aid).Scan(&success); err != nil {
+	query := `SELECT pg_try_advisory_lock($1)`
+	if _, err := p.conn.ExecContext(context.Background(), query, aid); err != nil {
 		return &database.Error{OrigErr: err, Err: "try lock failed", Query: []byte(query)}
 	}
 
-	if success {
-		p.isLocked = true
-		return nil
-	}
-
-	return database.ErrLocked
+	p.isLocked = true
+	return nil
 }
 
 func (p *Postgres) Unlock() error {
@@ -158,7 +150,6 @@ func (p *Postgres) Unlock() error {
 		return err
 	}
 
-	panic("Unlocking")
 	log.Info(fmt.Sprintf("Unlocking %s", aid))
 	query := `SELECT pg_advisory_unlock($1)`
 	if _, err := p.conn.ExecContext(context.Background(), query, aid); err != nil {
@@ -278,6 +269,8 @@ func (p *Postgres) ensureVersionTable() error {
 	if count == 1 {
 		return nil
 	}
+
+	log.Info(fmt.Sprintf("Creating %s table", p.config.MigrationsTable))
 
 	// if not, create the empty migration table
 	query = `CREATE TABLE "` + p.config.MigrationsTable + `" (version bigint not null primary key, dirty boolean not null)`
