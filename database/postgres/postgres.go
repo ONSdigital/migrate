@@ -81,7 +81,17 @@ func WithInstance(instance *sql.DB, config *Config) (database.Driver, error) {
 		config: config,
 	}
 
+	err = px.Lock()
+	if err != nil {
+		return nil, err
+	}
+
 	if err := px.ensureVersionTable(); err != nil {
+		return nil, err
+	}
+
+	err = px.Unlock()
+	if err != nil {
 		return nil, err
 	}
 
@@ -131,7 +141,7 @@ func (p *Postgres) Lock() error {
 	}
 
 	log.Info(fmt.Sprintf("Locking %s", aid))
-	query := `SELECT pg_try_advisory_lock($1)`
+	query := `SELECT pg_advisory_lock($1)`
 	if _, err := p.conn.ExecContext(context.Background(), query, aid); err != nil {
 		return &database.Error{OrigErr: err, Err: "try lock failed", Query: []byte(query)}
 	}
@@ -251,7 +261,15 @@ func (p *Postgres) Drop() error {
 				return &database.Error{OrigErr: err, Query: []byte(query)}
 			}
 		}
+		err = p.Lock()
+		if err != nil {
+			return err
+		}
 		if err := p.ensureVersionTable(); err != nil {
+			return err
+		}
+		err = p.Unlock()
+		if err != nil {
 			return err
 		}
 	}
