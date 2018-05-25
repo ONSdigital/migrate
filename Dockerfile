@@ -3,7 +3,7 @@ ARG VERSION
 
 RUN apk add --no-cache git gcc musl-dev
 
-WORKDIR /go/src/github.com/golang-migrate/migrate
+WORKDIR /go/src/github.com/ONSdigital/migrate
 
 ENV DATABASES="postgres mysql redshift cassandra spanner cockroachdb clickhouse"
 ENV SOURCES="file go-bindata github aws-s3 google-cloud-storage"
@@ -22,7 +22,7 @@ FROM alpine:3.7
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=downloader /go/src/github.com/golang-migrate/migrate/build/migrate.linux-386 /migrate
+COPY --from=downloader /go/src/github.com/ONSdigital/migrate/build/migrate.linux-386 /migrate
 RUN chmod u+x /migrate
 
 ENTRYPOINT ["/migrate"]

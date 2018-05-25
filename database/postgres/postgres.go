@@ -10,9 +10,10 @@ import (
 	nurl "net/url"
 
 	"context"
-	"github.com/golang-migrate/migrate"
-	"github.com/golang-migrate/migrate/database"
+	"github.com/ONSdigital/migrate"
+	"github.com/ONSdigital/migrate/database"
 	"github.com/lib/pq"
+	"github.com/labstack/gommon/log"
 )
 
 func init() {
@@ -131,7 +132,9 @@ func (p *Postgres) Lock() error {
 
 	// This will either obtain the lock immediately and return true,
 	// or return false if the lock cannot be acquired immediately.
-	query := `SELECT pg_try_advisory_lock($1)`
+	panic("Locking")
+	log.Info(fmt.Sprintf("Locking %s", aid))
+	query := `SELECT pg_advisory_lock($1)`
 	var success bool
 	if err := p.conn.QueryRowContext(context.Background(), query, aid).Scan(&success); err != nil {
 		return &database.Error{OrigErr: err, Err: "try lock failed", Query: []byte(query)}
@@ -155,6 +158,8 @@ func (p *Postgres) Unlock() error {
 		return err
 	}
 
+	panic("Unlocking")
+	log.Info(fmt.Sprintf("Unlocking %s", aid))
 	query := `SELECT pg_advisory_unlock($1)`
 	if _, err := p.conn.ExecContext(context.Background(), query, aid); err != nil {
 		return &database.Error{OrigErr: err, Query: []byte(query)}

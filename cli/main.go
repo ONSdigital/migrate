@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/golang-migrate/migrate"
+	"github.com/ONSdigital/migrate"
 )
 
 // set main log

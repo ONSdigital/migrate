@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"context"
-	dt "github.com/golang-migrate/migrate/database/testing"
-	mt "github.com/golang-migrate/migrate/testing"
+	dt "github.com/ONSdigital/migrate/database/testing"
+	mt "github.com/ONSdigital/migrate/testing"
 	// "github.com/lib/pq"
 )
 
